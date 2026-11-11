@@ -1,0 +1,63 @@
+[
+  {
+    "upstream_repo": "yetone/cumora",
+    "head_sha": "fd3d6c58cb426dcd8371426e8f92526dcf56136e",
+    "file": "server/src/documents/markdown.ts",
+    "function": "parseInlineMarkdown",
+    "native_test_cmd": "node --import tsx --test server/src/__tests__/document-markdown.test.ts",
+    "bench_cmd": "node --import tsx osspr-intake/harness/parse-inline-markdown.mjs",
+    "baseline_median_ms": 113.585396,
+    "baseline_noise_pct": 1.268623,
+    "tests_pass_on_baseline": true,
+    "workload": "One 100000-character agent document paragraph of snake_case identifiers (user_id, order_id, config_path) with no successful emphasis spans.",
+    "notes": "Each intraword underscore fails canOpenEmphasis, then the loop indexOf-scans the rest of the paragraph for `, **, __, ~~, *, _, and [. A 100KB identifier-heavy paragraph is quadratic (measured ~29ms at 50KB, ~114ms at 100KB, ~455ms at 200KB) and returns one text node. A single forward pass over delimiter positions would return the same nodes in linear time. Overlap: author:dexhunter repo:yetone/cumora has no PRs; open PRs 362, 340, 334, 333, 330, 328, 318, 317, 310, 309, 294, 148 do not touch this file; nothing merged since 2026-10-12 touches it; last commit is 2026-08-19; no open issue says this parser is being refactored, deprecated, or moved."
+  },
+  {
+    "upstream_repo": "yetone/cumora",
+    "head_sha": "fd3d6c58cb426dcd8371426e8f92526dcf56136e",
+    "file": "server/src/agents/turn-compaction.ts",
+    "function": "estimateHistoryTokens",
+    "native_test_cmd": "node --import tsx --test server/src/__tests__/agents-turn-compaction.test.ts",
+    "bench_cmd": "node --expose-gc --import tsx osspr-intake/harness/estimate-history-tokens.mjs",
+    "metric_kind": "peak_memory_bytes",
+    "baseline_value": 1605992,
+    "baseline_noise_pct": 0.014944,
+    "metric_benchmark": "node --expose-gc --import tsx osspr-intake/harness/estimate-history-tokens.mjs",
+    "labeled_data": null,
+    "tests_pass_on_baseline": true,
+    "workload": "Twelve bash function_call/output pairs, each output a distinct 128KiB shell transcript, plus the seeding user message.",
+    "notes": "Compaction calls this on every shrink step. Each call JSON.stringifies every history item, so a turn's tool transcripts are copied in full just to count UTF-16 code units; the return value is the integer 457460. The 12x128KiB size keeps that copy live until the call returns (~1.61MB heap delta) instead of letting a young-gen GC hide it. A counter that walks the same JSON text without retaining the string would return the same count. Overlap: author:dexhunter has no PRs on yetone/cumora; open PRs and PRs merged since 2026-10-12 do not touch turn-compaction.ts (turn.ts is touched, this module is not); last commit is 2026-09-14; no open issue marks it for refactor, deprecation, or a move."
+  },
+  {
+    "upstream_repo": "yetone/cumora",
+    "head_sha": "fd3d6c58cb426dcd8371426e8f92526dcf56136e",
+    "file": "server/src/agents/cli-parse.ts",
+    "function": "unescapeChat",
+    "native_test_cmd": "node --import tsx --test server/src/__tests__/agents-cli-parse.test.ts",
+    "bench_cmd": "node --expose-gc --import tsx osspr-intake/harness/unescape-chat.mjs",
+    "metric_kind": "peak_memory_bytes",
+    "baseline_value": 11854504,
+    "baseline_noise_pct": 0.002025,
+    "metric_benchmark": "node --expose-gc --import tsx osspr-intake/harness/unescape-chat.mjs",
+    "labeled_data": null,
+    "tests_pass_on_baseline": true,
+    "workload": "A 300000-character cumora reply body of literal shell escapes (backslash-n, backslash-quote, backslash-backslash) that unescapeChat turns back into text.",
+    "notes": "Reply bodies reach the CLI with shell escapes still literal. String.replace with a per-match callback allocates a match record per escape: a 300KB body decodes to 222856 characters but peaks at about 11.85MB. A single-pass builder returns the same string from one output buffer. Overlap: author:dexhunter has no PRs; open PRs touch cli.ts and cli-result.ts but not cli-parse.ts; no PR merged since 2026-10-12 touches this file; last commit is 2026-08-19; no open issue says the parser is being refactored, deprecated, or moved."
+  },
+  {
+    "upstream_repo": "yetone/cumora",
+    "head_sha": "fd3d6c58cb426dcd8371426e8f92526dcf56136e",
+    "file": "src/lib/markdownUrls.ts",
+    "function": "splitHttpUrlCandidate",
+    "native_test_cmd": "node --import tsx --test tests/message-markdown-links.test.ts",
+    "bench_cmd": "node --expose-gc --import tsx osspr-intake/harness/split-http-url.mjs",
+    "metric_kind": "peak_memory_bytes",
+    "baseline_value": 776488,
+    "baseline_noise_pct": 0.358537,
+    "metric_benchmark": "node --expose-gc --import tsx osspr-intake/harness/split-http-url.mjs",
+    "labeled_data": null,
+    "tests_pass_on_baseline": true,
+    "workload": "A 48157-character presigned CDN URL with a trailing ) captured from a chat sentence, the non-space run the link regex keeps.",
+    "notes": "The trailing-bracket check does Array.from on the whole URL and filters it twice, one string per code unit, to count parentheses. Trimming a one-character trail off a long signed attachment URL peaks at about 776KB. A code-unit scan returns the same url and trail. Tests cover the function through firstHttpUrlInMarkdown and remarkCumora. Overlap: author:dexhunter has no PRs; open PRs and PRs merged since 2026-10-12 do not touch markdownUrls.ts; last commit is 2026-09-05; no open issue says this helper is being refactored, deprecated, or moved."
+  }
+]
